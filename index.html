@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday! | A Special Journey</title>
+    <!-- Fonts: Inter for UI, Syne for Impactful Headers -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Scripts: GSAP for animations and Canvas Confetti for the finale -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0a0a0c;
+            --accent-primary: #ff3366; /* Neon Pink */
+            --accent-secondary: #7000ff; /* Deep Purple */
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f0f0f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrolling during the experience */
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Dynamic Animated Gradient Background --- */
+        .background-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0c 100%);
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            filter: blur(120px);
+            border-radius: 50%;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        /* --- UI Containers --- */
+        .scene {
+            position: absolute;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            display: none; /* Controlled by GSAP */
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .scene.active {
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 3.5rem;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        /* --- Glassmorphism Button --- */
+        .btn {
+            padding: 1rem 2.5rem;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.3);
+        }
+
+        /* --- Interactive Cake Styling --- */
+        .cake-container {
+            margin: 2rem auto;
+            position: relative;
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        .cake {
+            width: 160px;
+            height: 100px;
+            background: #f4e4d4;
+            border-radius: 10px 10px 0 0;
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            box-shadow: 0 10px 0 #e1cbb6;
+        }
+
+        .candle {
+            width: 12px;
+            height: 50px;
+            background: repeating-linear-gradient(45deg, #ff3366, #ff3366 5px, #fff 5px, #fff 10px);
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 3px;
+        }
+
+        .flame {
+            width: 15px;
+            height: 25px;
+            background: #ffaa00;
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -25px;
+            left: -2px;
+            box-shadow: 0 0 20px #ffaa00;
+            animation: flicker 0.1s infinite alternate;
+        }
+
+        .flame.out {
+            display: none;
+        }
+
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-2deg); opacity: 0.8; }
+            100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+        }
+
+        /* --- Message Card --- */
+        .message-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+        }
+
+        /* --- Progress Bar --- */
+        .progress-container {
+            position: fixed;
+            bottom: 40px;
+            width: 100px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-glow">
+        <div class="blob" id="blob1"></div>
+        <div class="blob" id="blob2"></div>
+    </div>
+
+    <!-- Scene 1: Introduction -->
+    <div class="scene active" id="scene1">
+        <h1>Hey, You.</h1>
+        <p>I built something small to celebrate a very big day. Are you ready for a little journey?</p>
+        <button class="btn" onclick="nextScene(2)">Begin</button>
+    </div>
+
+    <!-- Scene 2: Appreciation -->
+    <div class="scene" id="scene2">
+        <div class="message-card">
+            <h1>The World is Better.</h1>
+            <p>Honestly? The world just feels a little brighter with you in it. Your energy, your laugh, and the way you just "get it" – it’s rare.</p>
+        </div>
+        <button class="btn" onclick="nextScene(3)">Next</button>
+    </div>
+
+    <!-- Scene 3: The Interaction -->
+    <div class="scene" id="scene3">
+        <h1>Make a Wish.</h1>
+        <p>Close your eyes, think of something amazing, and tap the candle to blow it out.</p>
+        <div class="cake-container" onclick="blowCandle()">
+            <div class="cake">
+                <div class="candle">
+                    <div class="flame" id="mainFlame"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scene 4: The Celebration -->
+    <div class="scene" id="scene4">
+        <h1>HAPPY BIRTHDAY!</h1>
+        <div class="message-card">
+            <p>May your 2025 be filled with as much joy as you give to everyone else. You deserve every single win coming your way.</p>
+        </div>
+        <button class="btn" onclick="celebrateMore()">Celebrate Again</button>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <script>
+        // Move background blobs for a modern, fluid feel
+        gsap.to("#blob1", {
+            duration: 20,
+            x: "80vw",
+            y: "40vh",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+        gsap.to("#blob2", {
+            duration: 15,
+            x: "-40vw",
+            y: "-30vh",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: 2
+        });
+
+        let currentScene = 1;
+        const totalScenes = 4;
+
+        function updateProgress() {
+            const percent = (currentScene / totalScenes) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        function nextScene(sceneNumber) {
+            const currentEl = document.getElementById(`scene${currentScene}`);
+            const nextEl = document.getElementById(`scene${sceneNumber}`);
+
+            gsap.to(currentEl, {
+                duration: 0.8,
+                opacity: 0,
+                y: -20,
+                onComplete: () => {
+                    currentEl.classList.remove('active');
+                    nextEl.classList.add('active');
+                    gsap.fromTo(nextEl, 
+                        { opacity: 0, y: 20 }, 
+                        { duration: 0.8, opacity: 1, y: 0 }
+                    );
+                    currentScene = sceneNumber;
+                    updateProgress();
+                }
+            });
+        }
+
+        function blowCandle() {
+            const flame = document.getElementById('mainFlame');
+            flame.classList.add('out');
+            
+            // Trigger initial celebration
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff3366', '#7000ff', '#ffffff']
+            });
+
+            setTimeout(() => {
+                nextScene(4);
+                // Big finale celebration
+                const duration = 3 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 3,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#ff3366', '#7000ff']
+                    });
+                    confetti({
+                        particleCount: 3,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#ff3366', '#7000ff']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            }, 1000);
+        }
+
+        function celebrateMore() {
+            confetti({
+                particleCount: 200,
+                spread: 160,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Initialize progress bar
+        updateProgress();
+
+        // Reveal the first scene with a delay
+        window.onload = () => {
+            gsap.to("#scene1", { duration: 1, opacity: 1, y: 0, delay: 0.5 });
+        };
+    </script>
+</body>
+</html>
